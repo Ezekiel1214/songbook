@@ -1,24 +1,41 @@
-
 import { useState } from "react";
 import Header from "@/components/Header";
 import SongInput from "@/components/SongInput";
 import StoryBook from "@/components/StoryBook";
 import MusicNotes from "@/components/MusicNotes";
 import { generateStoryFromSong, StoryData } from "@/services/storyService";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [story, setStory] = useState<StoryData | null>(null);
+  const [loadingStage, setLoadingStage] = useState<string>("");
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
   const handleSongSubmit = async (songData: { type: string; content: string; title?: string }) => {
     try {
       setIsLoading(true);
-      const generatedStory = await generateStoryFromSong(songData);
+      setLoadingStage("Starting...");
+      setLoadingProgress(0);
+
+      const generatedStory = await generateStoryFromSong(songData, (stage, progress) => {
+        setLoadingStage(stage);
+        setLoadingProgress(progress);
+      });
       setStory(generatedStory);
     } catch (error) {
       console.error("Error generating story:", error);
+      const message = error instanceof Error ? error.message : "Something went wrong";
+      toast({
+        title: "Story generation failed",
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
+      setLoadingStage("");
+      setLoadingProgress(0);
     }
   };
 
@@ -43,7 +60,16 @@ const Index = () => {
         </div>
         
         <div className="max-w-6xl mx-auto my-12">
-          {story ? (
+          {isLoading ? (
+            <div className="max-w-md mx-auto text-center space-y-6 bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+              <div className="animate-pulse-soft">
+                <span className="text-6xl">📖</span>
+              </div>
+              <h2 className="text-2xl font-serif font-bold">{loadingStage}</h2>
+              <Progress value={loadingProgress} className="h-3 bg-white/20" />
+              <p className="text-sm opacity-70">This may take a minute...</p>
+            </div>
+          ) : story ? (
             <StoryBook 
               title={story.title} 
               pages={story.pages} 
