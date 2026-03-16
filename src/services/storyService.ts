@@ -18,9 +18,9 @@ interface GenerateStoryResponse {
 
 export const generateStoryFromSong = async (
   songData: { type: string; content: string; title?: string },
-  onProgress?: (stage: string, progress: number) => void
+  onProgress?: (stage: string, progress: number) => void,
+  artStyle: string = "watercolor"
 ): Promise<StoryData> => {
-  // Step 1: Generate story text
   onProgress?.("Crafting your story from the lyrics...", 10);
 
   const { data: storyData, error: storyError } = await supabase.functions.invoke<GenerateStoryResponse>(
@@ -34,7 +34,6 @@ export const generateStoryFromSong = async (
 
   onProgress?.("Story written! Generating illustrations...", 30);
 
-  // Step 2: Generate images for each page in parallel
   const totalPages = storyData.pages.length;
   let completedImages = 0;
 
@@ -42,7 +41,7 @@ export const generateStoryFromSong = async (
     try {
       const { data: imageData, error: imageError } = await supabase.functions.invoke(
         "generate-image",
-        { body: { imagePrompt: page.imagePrompt, pageIndex: index } }
+        { body: { imagePrompt: page.imagePrompt, pageIndex: index, artStyle } }
       );
 
       completedImages++;
