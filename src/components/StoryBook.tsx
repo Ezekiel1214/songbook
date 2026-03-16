@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download, Share2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 
 export interface StoryPage {
@@ -21,14 +22,21 @@ interface StoryBookProps {
 const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [direction, setDirection] = useState(0);
   const totalPages = pages.length;
 
   const nextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages - 1) {
+      setDirection(1);
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   const prevPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
+    if (currentPage > 0) {
+      setDirection(-1);
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   const handleShare = async () => {
@@ -53,22 +61,15 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
 
       for (let i = 0; i < pages.length; i++) {
         if (i > 0) pdf.addPage();
-
-        // Try to load the image
         try {
           const img = await loadImage(pages[i].imageUrl);
-          const imgWidth = pageWidth / 2;
-          pdf.addImage(img, "JPEG", 0, 0, imgWidth, pageHeight);
+          pdf.addImage(img, "JPEG", 0, 0, pageWidth / 2, pageHeight);
         } catch {
-          // Draw placeholder
           pdf.setFillColor(200, 200, 220);
           pdf.rect(0, 0, pageWidth / 2, pageHeight, "F");
         }
-
-        // Text side
         const textX = pageWidth / 2 + 10;
         const textWidth = pageWidth / 2 - 20;
-
         if (i === 0) {
           pdf.setFontSize(20);
           pdf.setFont("helvetica", "bold");
@@ -84,7 +85,6 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
           pdf.setFont("helvetica", "normal");
           pdf.text(pages[i].text, textX, 20, { maxWidth: textWidth });
         }
-
         pdf.setFontSize(8);
         pdf.text(`Page ${i + 1} of ${pages.length}`, pageWidth - 30, pageHeight - 10);
       }
@@ -99,55 +99,76 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
     }
   };
 
+  const pageVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <motion.div
+      className="w-full max-w-4xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-lyrical-deepPurple">{title}</h1>
-        <p className="text-lyrical-purple mt-2">A musical story</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-white">{title}</h1>
+        <p className="text-white/60 mt-2">A musical story</p>
       </div>
 
-      <Card className="story-card bg-white/80 backdrop-blur-md p-0 overflow-hidden">
+      <Card className="bg-card/90 backdrop-blur-md p-0 overflow-hidden shadow-2xl">
         <div className="flex flex-col md:flex-row min-h-[500px]">
-          <div className="w-full md:w-1/2 h-[300px] md:h-auto relative">
-            <img 
-              src={pages[currentPage].imageUrl} 
-              alt={`Illustration for page ${currentPage + 1}`}
-              className="w-full h-full object-cover"
-            />
+          <div className="w-full md:w-1/2 h-[300px] md:h-auto relative overflow-hidden bg-muted">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.img
+                key={currentPage}
+                src={pages[currentPage].imageUrl}
+                alt={`Illustration for page ${currentPage + 1}`}
+                className="w-full h-full object-cover absolute inset-0"
+                custom={direction}
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+              />
+            </AnimatePresence>
           </div>
-          
+
           <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
-            <div className="story-text text-lg md:text-xl mb-6">
-              {pages[currentPage].text}
-            </div>
-            
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentPage}
+                className="story-text text-lg md:text-xl mb-6 text-card-foreground"
+                custom={direction}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                {pages[currentPage].text}
+              </motion.div>
+            </AnimatePresence>
+
             <div className="flex justify-between items-center mt-auto">
-              <div className="text-sm text-lyrical-purple">
+              <div className="text-sm text-muted-foreground">
                 Page {currentPage + 1} of {totalPages}
               </div>
-              
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={prevPage}
                   disabled={currentPage === 0}
-                  className={cn(
-                    "border-lyrical-purple text-lyrical-purple hover:bg-lyrical-purple/10",
-                    currentPage === 0 && "opacity-50 cursor-not-allowed"
-                  )}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
-                  className={cn(
-                    "border-lyrical-purple text-lyrical-purple hover:bg-lyrical-purple/10",
-                    currentPage === totalPages - 1 && "opacity-50 cursor-not-allowed"
-                  )}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -158,31 +179,25 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
       </Card>
 
       <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} className="border-white/20 text-white hover:bg-white/10">
           Create New Story
         </Button>
-        
         <div className="flex gap-2">
-          <Button 
-            variant="secondary" 
-            onClick={handleShare}
-            className="flex items-center gap-2"
-          >
+          <Button variant="secondary" onClick={handleShare} className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
-            <span>Share</span>
+            <span className="hidden sm:inline">Share</span>
           </Button>
-          <Button 
-            variant="default" 
+          <Button
             onClick={handleDownload}
             disabled={isDownloading}
-            className="flex items-center gap-2 bg-lyrical-deepPurple hover:bg-lyrical-purple"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/80"
           >
             {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            <span>{isDownloading ? "Generating..." : "Download"}</span>
+            <span className="hidden sm:inline">{isDownloading ? "Generating..." : "Download"}</span>
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
