@@ -3,14 +3,23 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const stylePrompts: Record<string, string> = {
+  watercolor: "A beautiful watercolor children's book illustration",
+  cartoon: "A colorful, fun cartoon illustration with bold outlines",
+  "oil-painting": "A richly textured oil painting illustration with thick brushstrokes",
+  "pixel-art": "A detailed pixel art illustration in retro 16-bit style",
+  anime: "A beautiful Japanese anime-style illustration with vivid colors",
+  "stained-glass": "A stunning stained glass window style illustration with vibrant segments",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { imagePrompt, pageIndex } = await req.json();
+    const { imagePrompt, pageIndex, artStyle = "watercolor" } = await req.json();
     if (!imagePrompt) {
       return new Response(JSON.stringify({ error: "imagePrompt is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -20,7 +29,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const prompt = `A beautiful watercolor children's book illustration: ${imagePrompt}. Soft colors, whimsical style, storybook quality. No text in the image.`;
+    const styleDesc = stylePrompts[artStyle] || stylePrompts.watercolor;
+    const prompt = `${styleDesc}: ${imagePrompt}. Storybook quality, expressive, detailed. No text in the image.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -62,7 +72,6 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Extract base64 data
     const base64Match = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
     if (!base64Match) throw new Error("Invalid image data format");
 
