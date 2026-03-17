@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Download, Share2, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Download, Share2, Loader2, Quote } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
@@ -11,6 +10,7 @@ export interface StoryPage {
   text: string;
   imageUrl: string;
   imagePrompt?: string;
+  lyricReference?: string;
 }
 
 interface StoryBookProps {
@@ -65,7 +65,7 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
           const img = await loadImage(pages[i].imageUrl);
           pdf.addImage(img, "JPEG", 0, 0, pageWidth / 2, pageHeight);
         } catch {
-          pdf.setFillColor(200, 200, 220);
+          pdf.setFillColor(30, 25, 50);
           pdf.rect(0, 0, pageWidth / 2, pageHeight, "F");
         }
         const textX = pageWidth / 2 + 10;
@@ -105,6 +105,8 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
     exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
   };
 
+  const currentPageData = pages[currentPage];
+
   return (
     <motion.div
       className="w-full max-w-4xl mx-auto"
@@ -113,17 +115,18 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
       transition={{ duration: 0.5 }}
     >
       <div className="text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-white">{title}</h1>
-        <p className="text-white/60 mt-2">A musical story</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">{title}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">A musical story</p>
       </div>
 
-      <Card className="bg-card/90 backdrop-blur-md p-0 overflow-hidden shadow-2xl">
-        <div className="flex flex-col md:flex-row min-h-[500px]">
-          <div className="w-full md:w-1/2 h-[300px] md:h-auto relative overflow-hidden bg-muted">
+      <Card className="glass-panel border-0 p-0 overflow-hidden shadow-2xl rounded-2xl">
+        <div className="flex flex-col md:flex-row min-h-[480px]">
+          {/* Image side */}
+          <div className="w-full md:w-1/2 h-[280px] md:h-auto relative overflow-hidden bg-muted">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.img
                 key={currentPage}
-                src={pages[currentPage].imageUrl}
+                src={currentPageData.imageUrl}
                 alt={`Illustration for page ${currentPage + 1}`}
                 className="w-full h-full object-cover absolute inset-0"
                 custom={direction}
@@ -136,31 +139,43 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
             </AnimatePresence>
           </div>
 
+          {/* Text side */}
           <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentPage}
-                className="story-text text-lg md:text-xl mb-6 text-card-foreground"
+                className="space-y-4"
                 custom={direction}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {pages[currentPage].text}
+                <div className="story-text text-base md:text-lg text-card-foreground leading-relaxed">
+                  {currentPageData.text}
+                </div>
+                {currentPageData.lyricReference && (
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <Quote className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <p className="text-xs text-primary/80 italic leading-relaxed">
+                      {currentPageData.lyricReference}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
 
-            <div className="flex justify-between items-center mt-auto">
-              <div className="text-sm text-muted-foreground">
-                Page {currentPage + 1} of {totalPages}
+            <div className="flex justify-between items-center mt-6 pt-4 border-t border-border/30">
+              <div className="text-xs text-muted-foreground font-medium">
+                {currentPage + 1} / {totalPages}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={prevPage}
                   disabled={currentPage === 0}
+                  className="h-8 w-8 border-border/30 hover:bg-secondary/50"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -169,6 +184,7 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
                   size="icon"
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
+                  className="h-8 w-8 border-border/30 hover:bg-secondary/50"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -179,11 +195,11 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
       </Card>
 
       <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onClose} className="border-white/20 text-white hover:bg-white/10">
+        <Button variant="outline" onClick={onClose} className="border-border/30 text-muted-foreground hover:text-foreground hover:bg-secondary/50">
           Create New Story
         </Button>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={handleShare} className="flex items-center gap-2">
+          <Button variant="secondary" onClick={handleShare} className="flex items-center gap-2 bg-secondary/50 hover:bg-secondary">
             <Share2 className="h-4 w-4" />
             <span className="hidden sm:inline">Share</span>
           </Button>
