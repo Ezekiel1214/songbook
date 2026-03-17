@@ -24,7 +24,7 @@ const MusicNotes = () => {
             left: `${left}%`,
             animationDuration: `${animationDuration}s`,
             animationDelay: `${delay}s`,
-            opacity: 0.2
+            opacity: 0.08
           }}
         >
           {symbol}
