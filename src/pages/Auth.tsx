@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Music, ArrowLeft, Loader2 } from "lucide-react";
 import MusicNotes from "@/components/MusicNotes";
@@ -41,19 +40,21 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden lyrical-gradient text-white flex items-center justify-center">
+    <div className="min-h-screen relative overflow-hidden lyrical-gradient text-foreground flex items-center justify-center">
       <MusicNotes />
       <div className="relative z-10 w-full max-w-md px-4">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-8 w-8 text-accent" />
-            <h1 className="text-3xl font-serif font-bold">Lyrical Tale Weaver</h1>
+            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+              <Music className="h-5 w-5 text-primary" />
+            </div>
           </div>
-          <p className="text-white/70 text-sm">Transform songs into magical stories</p>
+          <h1 className="text-3xl font-serif font-bold text-foreground">Lyrical Tale Weaver</h1>
+          <p className="text-muted-foreground text-sm mt-1">Transform songs into magical stories</p>
         </div>
 
-        <Card className="bg-white/10 backdrop-blur-md border-white/20 p-6">
-          <h2 className="text-xl font-serif font-bold text-center mb-6 text-white">
+        <div className="glass-panel rounded-2xl p-6">
+          <h2 className="text-xl font-serif font-bold text-center mb-6 text-foreground">
             {mode === "login" ? "Welcome Back" : mode === "signup" ? "Create Account" : "Reset Password"}
           </h2>
 
@@ -64,7 +65,7 @@ const Auth = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                className="bg-secondary/50 border-border/50 text-foreground placeholder:text-muted-foreground"
               />
             )}
             <Input
@@ -73,7 +74,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+              className="bg-secondary/50 border-border/50 text-foreground placeholder:text-muted-foreground"
             />
             {mode !== "forgot" && (
               <Input
@@ -83,7 +84,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                className="bg-secondary/50 border-border/50 text-foreground placeholder:text-muted-foreground"
               />
             )}
 
@@ -96,31 +97,31 @@ const Auth = () => {
           <div className="mt-4 text-center text-sm space-y-2">
             {mode === "login" && (
               <>
-                <button onClick={() => setMode("forgot")} className="text-accent hover:underline block mx-auto">
+                <button onClick={() => setMode("forgot")} className="text-primary hover:underline block mx-auto">
                   Forgot password?
                 </button>
-                <p className="text-white/60">
+                <p className="text-muted-foreground">
                   Don't have an account?{" "}
-                  <button onClick={() => setMode("signup")} className="text-accent hover:underline">Sign up</button>
+                  <button onClick={() => setMode("signup")} className="text-primary hover:underline">Sign up</button>
                 </p>
               </>
             )}
             {mode === "signup" && (
-              <p className="text-white/60">
+              <p className="text-muted-foreground">
                 Already have an account?{" "}
-                <button onClick={() => setMode("login")} className="text-accent hover:underline">Sign in</button>
+                <button onClick={() => setMode("login")} className="text-primary hover:underline">Sign in</button>
               </p>
             )}
             {mode === "forgot" && (
-              <button onClick={() => setMode("login")} className="text-accent hover:underline flex items-center gap-1 mx-auto">
+              <button onClick={() => setMode("login")} className="text-primary hover:underline flex items-center gap-1 mx-auto">
                 <ArrowLeft className="h-3 w-3" /> Back to login
               </button>
             )}
           </div>
-        </Card>
+        </div>
 
         <div className="text-center mt-6">
-          <Button variant="ghost" onClick={() => navigate("/")} className="text-white/60 hover:text-white">
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
             Continue without account
           </Button>
         </div>

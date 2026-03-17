@@ -4,35 +4,40 @@ export interface StoryPage {
   text: string;
   imageUrl: string;
   imagePrompt?: string;
+  lyricReference?: string;
 }
 
 export interface StoryData {
   title: string;
+  themes?: string[];
   pages: StoryPage[];
 }
 
 interface GenerateStoryResponse {
   title: string;
-  pages: Array<{ text: string; imagePrompt: string }>;
+  themes?: string[];
+  pages: Array<{ text: string; imagePrompt: string; lyricReference?: string }>;
 }
 
+export type StoryTone = "whimsical" | "dramatic" | "dark" | "romantic" | "humorous";
+
 export const generateStoryFromSong = async (
-  songData: { type: string; content: string; title?: string },
+  songData: { type: string; content: string; title?: string; tone?: StoryTone },
   onProgress?: (stage: string, progress: number) => void,
   artStyle: string = "watercolor"
 ): Promise<StoryData> => {
-  onProgress?.("Crafting your story from the lyrics...", 10);
+  onProgress?.("Analyzing song themes and emotions...", 10);
 
   const { data: storyData, error: storyError } = await supabase.functions.invoke<GenerateStoryResponse>(
     "generate-story",
-    { body: { lyrics: songData.content, title: songData.title } }
+    { body: { lyrics: songData.content, title: songData.title, tone: songData.tone || "whimsical" } }
   );
 
   if (storyError || !storyData) {
     throw new Error(storyError?.message || "Failed to generate story");
   }
 
-  onProgress?.("Story written! Generating illustrations...", 30);
+  onProgress?.("Story crafted! Painting illustrations...", 30);
 
   const totalPages = storyData.pages.length;
   let completedImages = 0;
@@ -66,10 +71,12 @@ export const generateStoryFromSong = async (
 
   return {
     title: storyData.title,
+    themes: storyData.themes,
     pages: storyData.pages.map((page, i) => ({
       text: page.text,
       imageUrl: imageUrls[i],
       imagePrompt: page.imagePrompt,
+      lyricReference: page.lyricReference,
     })),
   };
 };

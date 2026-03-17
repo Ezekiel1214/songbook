@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,43 +7,47 @@
 
 @layer base {
   :root {
-    --background: 260 60% 97%;
-    --foreground: 260 50% 10%;
+    --background: 250 15% 6%;
+    --foreground: 240 10% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 260 50% 10%;
+    --card: 250 15% 10%;
+    --card-foreground: 240 10% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 260 50% 10%;
+    --popover: 250 15% 10%;
+    --popover-foreground: 240 10% 90%;
 
-    --primary: 260 40% 40%;
+    --primary: 260 60% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 260 30% 90%;
-    --secondary-foreground: 260 40% 30%;
+    --secondary: 250 15% 15%;
+    --secondary-foreground: 240 10% 80%;
 
-    --muted: 260 20% 90%;
-    --muted-foreground: 260 30% 40%;
+    --muted: 250 10% 18%;
+    --muted-foreground: 240 10% 55%;
 
-    --accent: 45 100% 50%;
-    --accent-foreground: 260 50% 10%;
+    --accent: 45 100% 55%;
+    --accent-foreground: 250 15% 6%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 260 30% 85%;
-    --input: 260 30% 85%;
-    --ring: 260 40% 40%;
+    --border: 250 15% 18%;
+    --input: 250 15% 18%;
+    --ring: 260 60% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 260 40% 10%;
-    --sidebar-foreground: 260 30% 90%;
-    --sidebar-primary: 260 40% 40%;
+    --glass-bg: 250 20% 12%;
+    --glass-border: 250 15% 22%;
+    --glass-highlight: 260 40% 50%;
+
+    --sidebar-background: 250 15% 8%;
+    --sidebar-foreground: 240 10% 85%;
+    --sidebar-primary: 260 60% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 100% 50%;
-    --sidebar-accent-foreground: 260 40% 10%;
-    --sidebar-border: 260 30% 20%;
+    --sidebar-accent: 45 100% 55%;
+    --sidebar-accent-foreground: 250 15% 6%;
+    --sidebar-border: 250 15% 18%;
     --sidebar-ring: 260 40% 60%;
   }
 }
@@ -54,7 +58,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -65,19 +69,97 @@
     @apply font-serif leading-relaxed;
   }
 
-  .lyrical-gradient {
-    @apply bg-gradient-to-br from-lyrical-purple to-lyrical-midnight;
+  /* Dark glassmorphism panels */
+  .glass-panel {
+    background: hsl(var(--glass-bg) / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border) / 0.4);
+    box-shadow: 
+      0 8px 32px hsl(250 50% 5% / 0.4),
+      inset 0 1px 0 hsl(var(--glass-highlight) / 0.1);
   }
-  
+
+  .glass-panel-light {
+    background: hsl(var(--glass-bg) / 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--glass-border) / 0.3);
+  }
+
+  /* Gradient backgrounds */
+  .lyrical-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(250 25% 8%) 0%,
+      hsl(260 30% 12%) 40%,
+      hsl(270 25% 10%) 70%,
+      hsl(250 20% 6%) 100%
+    );
+  }
+
+  /* Ambient glow effect */
+  .ambient-glow {
+    position: relative;
+  }
+  .ambient-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(
+      ellipse at center,
+      hsl(260 60% 40% / 0.15) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
   .story-card {
-    @apply relative overflow-hidden rounded-lg shadow-lg transition-all duration-300;
+    @apply relative overflow-hidden rounded-xl transition-all duration-300;
   }
   
   .story-card:hover {
     @apply shadow-xl transform -translate-y-1;
+    box-shadow: 0 20px 40px hsl(260 60% 30% / 0.2);
   }
   
   .music-note {
-    @apply absolute opacity-30 text-lyrical-gold animate-float;
+    @apply absolute opacity-20 animate-float;
+    color: hsl(var(--accent) / 0.4);
+  }
+
+  /* Skeleton shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Typewriter / streaming text effect */
+  @keyframes typewriter-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .streaming-cursor::after {
+    content: '▊';
+    animation: typewriter-cursor 0.8s ease-in-out infinite;
+    color: hsl(var(--primary));
+    margin-left: 2px;
   }
 }

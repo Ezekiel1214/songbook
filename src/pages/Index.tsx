@@ -4,12 +4,14 @@ import Header from "@/components/Header";
 import SongInput from "@/components/SongInput";
 import StoryBook from "@/components/StoryBook";
 import MusicNotes from "@/components/MusicNotes";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import { generateStoryFromSong, StoryData } from "@/services/storyService";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ArtStyle } from "@/components/ArtStylePicker";
+import { StoryTone } from "@/components/TonePicker";
+import { motion } from "framer-motion";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +22,6 @@ const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Handle viewing a saved story from Library
   useEffect(() => {
     const state = location.state as { story?: any } | null;
     if (state?.story) {
@@ -28,7 +29,6 @@ const Index = () => {
         title: state.story.title,
         pages: state.story.pages,
       });
-      // Clear state to avoid re-showing on refresh
       navigate("/", { replace: true, state: {} });
     }
   }, [location.state]);
@@ -51,14 +51,14 @@ const Index = () => {
     }
   };
 
-  const handleSongSubmit = async (songData: { type: string; content: string; title?: string; artStyle: ArtStyle }) => {
+  const handleSongSubmit = async (songData: { type: string; content: string; title?: string; artStyle: ArtStyle; tone: StoryTone }) => {
     try {
       setIsLoading(true);
-      setLoadingStage("Starting...");
+      setLoadingStage("Analyzing song themes...");
       setLoadingProgress(0);
 
       const generatedStory = await generateStoryFromSong(
-        songData,
+        { ...songData, tone: songData.tone },
         (stage, progress) => {
           setLoadingStage(stage);
           setLoadingProgress(progress);
@@ -66,8 +66,6 @@ const Index = () => {
         songData.artStyle
       );
       setStory(generatedStory);
-
-      // Auto-save for logged-in users
       await saveStory(generatedStory, songData.title, songData.content, songData.artStyle);
     } catch (error) {
       console.error("Error generating story:", error);
@@ -83,31 +81,40 @@ const Index = () => {
   const resetStory = () => setStory(null);
 
   return (
-    <div className="min-h-screen relative overflow-hidden lyrical-gradient text-white">
+    <div className="min-h-screen relative overflow-hidden lyrical-gradient text-foreground">
       <MusicNotes />
 
-      <div className="container mx-auto px-4 py-12 relative z-10">
+      {/* Ambient glow effects */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-accent/5 blur-[100px] pointer-events-none" />
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <Header />
 
-        <div className="my-12 text-center max-w-2xl mx-auto animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6">
-            Transform Songs into Magical Stories
+        <motion.div
+          className="my-10 text-center max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel-light text-xs text-muted-foreground mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            AI-Powered Story Generation
+          </div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 leading-tight">
+            Transform Songs into
+            <span className="block bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+              Magical Stories
+            </span>
           </h1>
-          <p className="text-xl opacity-90">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             Enter your favorite lyrics, and watch as AI weaves a beautiful illustrated storybook inspired by the music.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="max-w-6xl mx-auto my-12">
+        <div className="max-w-6xl mx-auto my-10">
           {isLoading ? (
-            <div className="max-w-md mx-auto text-center space-y-6 bg-white/10 backdrop-blur-sm p-8 rounded-xl animate-fade-in">
-              <div className="animate-pulse-soft">
-                <span className="text-6xl">📖</span>
-              </div>
-              <h2 className="text-2xl font-serif font-bold">{loadingStage}</h2>
-              <Progress value={loadingProgress} className="h-3 bg-white/20" />
-              <p className="text-sm opacity-70">This may take a minute...</p>
-            </div>
+            <SkeletonLoader stage={loadingStage} progress={loadingProgress} />
           ) : story ? (
             <StoryBook title={story.title} pages={story.pages} onClose={resetStory} />
           ) : (
@@ -115,12 +122,10 @@ const Index = () => {
           )}
         </div>
 
-        <footer className="mt-16 text-center opacity-80 text-sm">
+        <footer className="mt-16 text-center text-sm text-muted-foreground/60">
           <p>© 2025 Lyrical Tale Weaver • AI-Powered Story Generation from Songs</p>
         </footer>
       </div>
-
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-lyrical-midnight/50 to-transparent"></div>
     </div>
   );
 };
