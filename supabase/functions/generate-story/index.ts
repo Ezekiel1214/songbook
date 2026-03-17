@@ -2,14 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { lyrics, title } = await req.json();
+    const { lyrics, title, tone = "whimsical" } = await req.json();
     if (!lyrics) {
       return new Response(JSON.stringify({ error: "Lyrics are required" }), {
         status: 400,
@@ -20,19 +20,48 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `You are a creative children's storybook author. Given song lyrics, create an illustrated storybook with 4-5 pages. Each page should have evocative narrative text (2-3 sentences) inspired by the lyrics' themes and emotions. Also provide a short image description for each page that would make a beautiful watercolor illustration.
+    const toneGuides: Record<string, string> = {
+      whimsical: "Light, playful, and magical. Think fairy tales and wonder.",
+      dramatic: "Epic, intense, emotionally powerful. Think sweeping cinematic stories.",
+      dark: "Mysterious, haunting, gothic. Think Brothers Grimm original tales.",
+      romantic: "Tender, heartfelt, poetic. Think love letters and moonlit gardens.",
+      humorous: "Witty, fun, lighthearted. Think Roald Dahl or Shel Silverstein.",
+    };
+
+    const toneDesc = toneGuides[tone] || toneGuides.whimsical;
+
+    const systemPrompt = `You are a master storyteller who transforms song lyrics into richly illustrated storybooks. Your stories don't just vaguely reference the song — they are deeply intertwined with the lyrics.
+
+APPROACH:
+1. First, identify the KEY THEMES, EMOTIONS, and IMAGERY in the lyrics
+2. Extract specific MEMORABLE LINES or PHRASES from the lyrics
+3. Build a narrative that uses the song's emotional arc as its backbone
+4. Weave actual lyric fragments naturally into the story text (italicized with *)
+5. Each page's illustration should reflect a specific moment or image from the lyrics
+
+TONE: ${toneDesc}
+
+Create a storybook with 5 pages. Each page should have:
+- Rich narrative text (3-4 sentences) that directly connects to the lyrics
+- At least one reference or woven-in lyric fragment per page
+- A detailed image prompt that captures a specific visual from the lyrics
 
 Return ONLY valid JSON in this exact format:
 {
-  "title": "Story title",
+  "title": "A creative story title inspired by the song",
+  "themes": ["theme1", "theme2", "theme3"],
   "pages": [
-    { "text": "Story text for this page", "imagePrompt": "Detailed illustration description" }
+    {
+      "text": "Story text with *woven lyric fragments* in italics",
+      "imagePrompt": "Detailed illustration description capturing a specific lyric image",
+      "lyricReference": "The specific lyric line this page is inspired by"
+    }
   ]
 }`;
 
     const userPrompt = title
-      ? `Song: "${title}"\n\nLyrics:\n${lyrics}`
-      : `Lyrics:\n${lyrics}`;
+      ? `Transform this song into a storybook:\n\nSong: "${title}"\n\nLyrics:\n${lyrics}`
+      : `Transform these lyrics into a storybook:\n\nLyrics:\n${lyrics}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -68,7 +97,6 @@ Return ONLY valid JSON in this exact format:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
-    // Parse JSON from the response (handle markdown code blocks)
     let storyData;
     try {
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
