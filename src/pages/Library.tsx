@@ -152,17 +152,31 @@ const Library = () => {
                         <span className="text-muted-foreground/40 text-xs">
                           {new Date(story.created_at).toLocaleDateString()}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteStory(story.id);
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-7 w-7 ${story.is_public ? 'text-green-400 hover:text-muted-foreground' : 'text-muted-foreground/30 hover:text-green-400'}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePublic(story.id, story.is_public);
+                            }}
+                            title={story.is_public ? "Make private" : "Share publicly"}
+                          >
+                            {story.is_public ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground/30 hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteStory(story.id);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
