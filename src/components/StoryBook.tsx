@@ -24,6 +24,7 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [direction, setDirection] = useState(0);
+  const { isPlaying, currentPage: narrationPage, toggleNarration, stop: stopNarration } = useNarration();
   const totalPages = pages.length;
 
   const nextPage = () => {
