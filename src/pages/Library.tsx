@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { BookOpen, Plus, Trash2, ArrowLeft, Loader2 } from "lucide-react";
+import { BookOpen, Plus, Trash2, ArrowLeft, Loader2, Globe, Lock } from "lucide-react";
 import MusicNotes from "@/components/MusicNotes";
 import Header from "@/components/Header";
 import { motion } from "framer-motion";
