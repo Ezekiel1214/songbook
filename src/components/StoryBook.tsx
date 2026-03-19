@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Download, Share2, Loader2, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Share2, Loader2, Quote, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNarration } from "@/hooks/use-narration";
 import jsPDF from "jspdf";
 
 export interface StoryPage {
