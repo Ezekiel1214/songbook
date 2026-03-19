@@ -170,8 +170,23 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
             </AnimatePresence>
 
             <div className="flex justify-between items-center mt-6 pt-4 border-t border-border/30">
-              <div className="text-xs text-muted-foreground font-medium">
-                {currentPage + 1} / {totalPages}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium">
+                  {currentPage + 1} / {totalPages}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`h-8 w-8 ${isPlaying && narrationPage === currentPage ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={() => toggleNarration(currentPageData.text, currentPage)}
+                  title={isPlaying && narrationPage === currentPage ? "Stop narration" : "Listen to this page"}
+                >
+                  {isPlaying && narrationPage === currentPage ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
               <div className="flex gap-1.5">
                 <Button
