@@ -29,6 +29,7 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
 
   const nextPage = () => {
     if (currentPage < totalPages - 1) {
+      stopNarration();
       setDirection(1);
       setCurrentPage(currentPage + 1);
     }
@@ -36,6 +37,7 @@ const StoryBook = ({ title, pages, onClose }: StoryBookProps) => {
 
   const prevPage = () => {
     if (currentPage > 0) {
+      stopNarration();
       setDirection(-1);
       setCurrentPage(currentPage - 1);
     }
