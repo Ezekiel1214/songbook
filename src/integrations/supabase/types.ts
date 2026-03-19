@@ -43,6 +43,7 @@ export type Database = {
           art_style: string | null
           created_at: string
           id: string
+          is_public: boolean
           lyrics: string | null
           pages: Json
           song_title: string | null
@@ -54,6 +55,7 @@ export type Database = {
           art_style?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean
           lyrics?: string | null
           pages?: Json
           song_title?: string | null
@@ -65,6 +67,7 @@ export type Database = {
           art_style?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean
           lyrics?: string | null
           pages?: Json
           song_title?: string | null
