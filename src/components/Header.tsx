@@ -1,4 +1,4 @@
-import { Music, BookOpen, LogIn, LogOut } from "lucide-react";
+import { Music, BookOpen, LogIn, LogOut, Globe } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
