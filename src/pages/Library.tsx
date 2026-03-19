@@ -57,6 +57,21 @@ const Library = () => {
     }
   };
 
+  const togglePublic = async (id: string, currentValue: boolean) => {
+    const { error } = await supabase
+      .from("stories")
+      .update({ is_public: !currentValue })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setStories((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, is_public: !currentValue } : s))
+      );
+      toast({ title: !currentValue ? "Story shared publicly!" : "Story set to private" });
+    }
+  };
+
   const viewStory = (story: SavedStory) => {
     navigate("/", { state: { story } });
   };
