@@ -14,9 +14,10 @@ interface SavedStory {
   title: string;
   song_title: string | null;
   art_style: string;
-  pages: any[];
-  created_at: string;
-}
+    pages: any[];
+    created_at: string;
+    is_public: boolean;
+  }
 
 const Library = () => {
   const { user, loading: authLoading } = useAuth();
