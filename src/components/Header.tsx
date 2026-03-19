@@ -1,4 +1,4 @@
-import { Music, BookOpen, LogIn, LogOut } from "lucide-react";
+import { Music, BookOpen, LogIn, LogOut, Globe } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +20,15 @@ const Header = () => {
         </button>
 
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/gallery")}
+            className="text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+          >
+            <Globe className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Gallery</span>
+          </Button>
           {user ? (
             <>
               <Button
