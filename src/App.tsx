@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Library from "./pages/Library";
 import ResetPassword from "./pages/ResetPassword";
 import Gallery from "./pages/Gallery";
+import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/library" element={<Library />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
