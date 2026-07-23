@@ -47,8 +47,8 @@ const Gallery = () => {
   }, []);
 
   const viewStory = async (story: PublicStory) => {
-    // Increment view count
-    await supabase.rpc("increment_view_count", { story_id: story.id });
+    // Increment view count via secure edge function
+    supabase.functions.invoke("increment-view", { body: { story_id: story.id } }).catch(() => {});
     navigate("/", { state: { story } });
   };
 
