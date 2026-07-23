@@ -12,24 +12,28 @@ interface LyricSearchProps {
 }
 
 const LyricSearch = ({ onLyricSelect, onClose }: LyricSearchProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [artist, setArtist] = useState("");
+  const [track, setTrack] = useState("");
   const [searchResults, setSearchResults] = useState<LyricResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPreview, setSelectedPreview] = useState<LyricResult | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!artist.trim() && !track.trim()) return;
 
     try {
       setIsLoading(true);
       setSelectedPreview(null);
-      const results = await searchLyrics(searchQuery);
+      const results = await searchLyrics({
+        artist: artist.trim(),
+        track: track.trim(),
+      });
       setSearchResults(results);
       if (results.length === 0) {
         toast({
           title: "No songs found",
-          description: "Try a different song title or artist name",
+          description: "Try adjusting the artist or song title",
         });
       }
     } catch (error) {
@@ -60,23 +64,32 @@ const LyricSearch = ({ onLyricSelect, onClose }: LyricSearchProps) => {
         </Button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <Input
-          placeholder="Search by song title or artist..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-secondary/50 border-border/50 focus:border-primary/50 text-foreground placeholder:text-muted-foreground"
-          autoFocus
-        />
+      <form onSubmit={handleSearch} className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Input
+            placeholder="Artist (e.g. Adele)"
+            value={artist}
+            onChange={(e) => setArtist(e.target.value)}
+            className="bg-secondary/50 border-border/50 focus:border-primary/50 text-foreground placeholder:text-muted-foreground"
+            autoFocus
+          />
+          <Input
+            placeholder="Song title (e.g. Hello)"
+            value={track}
+            onChange={(e) => setTrack(e.target.value)}
+            className="bg-secondary/50 border-border/50 focus:border-primary/50 text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
         <Button
           type="submit"
-          size="icon"
-          disabled={isLoading || !searchQuery.trim()}
-          className="shrink-0 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary"
+          disabled={isLoading || (!artist.trim() && !track.trim())}
+          className="w-full bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary gap-2"
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          Search
         </Button>
       </form>
+
 
       {isLoading && (
         <div className="space-y-3">

@@ -5,79 +5,62 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+interface LrclibHit {
+  id: number;
+  trackName: string;
+  artistName: string;
+  albumName?: string;
+  duration?: number;
+  instrumental?: boolean;
+  plainLyrics?: string | null;
+  syncedLyrics?: string | null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { query } = await req.json();
-    if (!query || typeof query !== "string") {
-      return new Response(JSON.stringify({ error: "Query is required" }), {
+    const body = await req.json().catch(() => ({}));
+    const query: string = (body.query ?? "").toString().trim();
+    const artist: string = (body.artist ?? "").toString().trim();
+    const track: string = (body.track ?? "").toString().trim();
+
+    if (!query && !artist && !track) {
+      return new Response(JSON.stringify({ error: "Provide a query, or artist and track" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const params = new URLSearchParams();
+    if (track) params.set("track_name", track);
+    if (artist) params.set("artist_name", artist);
+    if (!track && !artist && query) params.set("q", query);
 
-    // Use AI to recall lyrics for the searched song
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
+    const url = `https://lrclib.net/api/search?${params.toString()}`;
+    const res = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+        "User-Agent": "LyricalTaleWeaver/1.0 (https://songbook.lovable.app)",
       },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `You are a music lyrics expert. When given a search query (song title, artist, or partial lyrics), find the most likely matching songs and return their details.
-
-Return ONLY valid JSON in this exact format:
-{
-  "results": [
-    {
-      "title": "Song Title",
-      "artist": "Artist Name",
-      "album": "Album Name",
-      "year": "Year",
-      "lyrics": "Full lyrics of the song (or a substantial portion if very long)",
-      "genre": "Genre"
-    }
-  ]
-}
-
-Return up to 5 matching results. If lyrics are very long, include at least the first 3-4 verses/choruses. If you're not confident about exact lyrics, provide what you know and note it. Only include real songs.`,
-          },
-          { role: "user", content: `Search for: ${query}` },
-        ],
-      }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error(`AI gateway error: ${response.status}`);
+    if (!res.ok) {
+      throw new Error(`LRCLIB error: ${res.status}`);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const hits = (await res.json()) as LrclibHit[];
 
-    let results;
-    try {
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-      const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();
-      results = JSON.parse(jsonStr);
-    } catch {
-      console.error("Failed to parse lyrics search JSON:", content);
-      throw new Error("Failed to parse search results");
-    }
+    const results = hits
+      .filter((h) => h.plainLyrics && h.plainLyrics.trim().length > 0)
+      .slice(0, 10)
+      .map((h) => ({
+        title: h.trackName,
+        artist: h.artistName,
+        album: h.albumName,
+        lyrics: h.plainLyrics!.trim(),
+      }));
 
-    return new Response(JSON.stringify(results), {
+    return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
