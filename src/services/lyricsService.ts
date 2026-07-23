@@ -9,10 +9,21 @@ export interface LyricResult {
   genre?: string;
 }
 
-export const searchLyrics = async (query: string): Promise<LyricResult[]> => {
+export interface LyricSearchParams {
+  artist?: string;
+  track?: string;
+  query?: string;
+}
+
+export const searchLyrics = async (
+  params: string | LyricSearchParams
+): Promise<LyricResult[]> => {
+  const requestBody =
+    typeof params === "string" ? { query: params } : params;
+
   const { data, error } = await supabase.functions.invoke<{ results: LyricResult[] }>(
     "search-lyrics",
-    { body: { query } }
+    { body: requestBody }
   );
 
   if (error || !data?.results) {
