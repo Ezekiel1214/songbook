@@ -6,7 +6,7 @@
 import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.24.0";
 
 // src/lib/mcp/tools/list-stories.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.95.3";
+import { createClient } from "npm:@supabase/supabase-js@^2.110.8";
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z } from "npm:zod@^3.25.76";
 function supabaseForUser(ctx) {
@@ -39,7 +39,7 @@ var list_stories_default = defineTool({
 });
 
 // src/lib/mcp/tools/get-story.ts
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.95.3";
+import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.110.8";
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z2 } from "npm:zod@^3.25.76";
 function supabaseForUser2(ctx) {
@@ -75,7 +75,7 @@ var get_story_default = defineTool2({
 });
 
 // src/lib/mcp/tools/set-story-visibility.ts
-import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.95.3";
+import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.110.8";
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z3 } from "npm:zod@^3.25.76";
 function supabaseForUser3(ctx) {
@@ -112,7 +112,7 @@ var set_story_visibility_default = defineTool3({
 });
 
 // src/lib/mcp/tools/delete-story.ts
-import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.95.3";
+import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.110.8";
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z4 } from "npm:zod@^3.25.76";
 function supabaseForUser4(ctx) {
