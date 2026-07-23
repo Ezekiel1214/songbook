@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://jkjvayzvtisjhvhsfavf.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "lyrical-tale-weaver-mcp",
+      "version": "0.1.0",
+      "title": "Lyrical Tale Weaver"
+    },
+    "tools": [
+      {
+        "name": "list_stories",
+        "title": "List my stories",
+        "description": "List storybooks the signed-in user has generated from song lyrics.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Max number of stories to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_story",
+        "title": "Get a story",
+        "description": "Fetch a single storybook by ID, including its pages, lyrics, and illustrations.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "story_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The story's UUID."
+            }
+          },
+          "required": [
+            "story_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "set_story_visibility",
+        "title": "Set story visibility",
+        "description": "Publish a story to the public gallery, or make it private again.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "story_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The story's UUID."
+            },
+            "is_public": {
+              "type": "boolean",
+              "description": "True to share publicly, false to make private."
+            }
+          },
+          "required": [
+            "story_id",
+            "is_public"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_story",
+        "title": "Delete a story",
+        "description": "Permanently delete one of the signed-in user's storybooks.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "story_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The story's UUID."
+            }
+          },
+          "required": [
+            "story_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

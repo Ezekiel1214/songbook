@@ -1,0 +1,40 @@
+import { createClient } from "@supabase/supabase-js";
+import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
+import { z } from "zod";
+
+function supabaseForUser(ctx: ToolContext) {
+  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+export default defineTool({
+  name: "get_story",
+  title: "Get a story",
+  description: "Fetch a single storybook by ID, including its pages, lyrics, and illustrations.",
+  inputSchema: {
+    story_id: z.string().uuid().describe("The story's UUID."),
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ story_id }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const { data, error } = await supabaseForUser(ctx)
+      .from("stories")
+      .select("*")
+      .eq("id", story_id)
+      .maybeSingle();
+    if (error) {
+      return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    if (!data) {
+      return { content: [{ type: "text", text: "Story not found or not accessible." }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { story: data },
+    };
+  },
+});
