@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,12 @@ import MusicNotes from "@/components/MusicNotes";
 
 type AuthMode = "login" | "signup" | "forgot";
 
+function safeNext(raw: string | null): string {
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
+}
+
 const Auth = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -17,6 +23,8 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get("next"));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +32,11 @@ const Auth = () => {
     try {
       if (mode === "login") {
         await signIn(email, password);
-        navigate("/");
+        if (next !== "/") {
+          window.location.href = next;
+        } else {
+          navigate("/");
+        }
       } else if (mode === "signup") {
         await signUp(email, password, displayName);
         toast({ title: "Check your email!", description: "We sent you a confirmation link." });
@@ -38,6 +50,7 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen relative overflow-hidden lyrical-gradient text-foreground flex items-center justify-center">
